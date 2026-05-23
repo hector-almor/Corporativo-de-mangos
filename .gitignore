@@ -1,0 +1,40 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Build
+build/
+app/build/
+**/build/
+
+# Gradle
+.gradle/
+**/.gradle/
+
+# Local config (cada dev tiene su propia ruta del SDK)
+local.properties
+
+# Android Studio
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Keystore (NUNCA subir llaves de firma)
+*.keystore
+*.jks
+
+# Logs
+*.log
