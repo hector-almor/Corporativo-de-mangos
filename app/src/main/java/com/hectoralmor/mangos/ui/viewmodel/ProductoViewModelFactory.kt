@@ -1,4 +1,4 @@
-package com.hectoralmor.mangos
+package com.hectoralmor.mangos.ui.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.ViewModel

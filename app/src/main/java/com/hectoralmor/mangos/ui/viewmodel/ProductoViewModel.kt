@@ -1,4 +1,4 @@
-package com.hectoralmor.mangos
+package com.hectoralmor.mangos.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -23,6 +23,16 @@ class ProductoViewModel(private val dao: ProductoDao) : ViewModel() {
     fun eliminarProducto(producto: Producto) {
         viewModelScope.launch {
             dao.delete(producto)
+        }
+    }
+
+    fun limpiarProductos() {
+        viewModelScope.launch {
+            dao.getAll().collect { productos ->
+                productos.forEach { producto ->
+                    dao.delete(producto)
+                }
+            }
         }
     }
 }
