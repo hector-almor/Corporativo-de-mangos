@@ -17,15 +17,18 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun CompraScreen(
+fun EditarCompraScreen(
     onCancelar: () -> Unit,
-    onGuardar: () -> Unit
+    onGuardar: () -> Unit,
+    onEliminar: () -> Unit
 ) {
     val proveedores = listOf("Proveedor A", "Proveedor B", "Proveedor C") /*De prueba, manda a llamar los proveedores de la bdd y pon una excepcion por si no hay ninguno*/
-    var proveedorSeleccionado by remember { mutableStateOf("Selecciona un proveedor") }
+
+    /*Datos de prueba, despues reemplaza por los de la bdd*/
+    var proveedorSeleccionado by remember { mutableStateOf("Proveedor A") }
     var dropdownExpandido by remember { mutableStateOf(false) }
-    var precio by remember { mutableStateOf("") }
-    var cantidad by remember { mutableStateOf("") }
+    var precio by remember { mutableStateOf("150.00") }
+    var cantidad by remember { mutableStateOf("10") }
     val fecha = remember { /* Fecha automática, toma el momento cuando abres la pantalla*/
         LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
     }
@@ -33,6 +36,13 @@ fun CompraScreen(
         val p = precio.toDoubleOrNull() ?: 0.0 /*Si detecta algo raro, se pone 0.0 en automatico*/
         val c = cantidad.toIntOrNull() ?: 0
         p * c
+    }
+
+    /*Para activar el boton de guardar cuando los campos tengan un valor valido*/
+    val botonValidoFiltro = remember(proveedorSeleccionado, precio, cantidad) {
+        proveedorSeleccionado.isNotBlank() &&
+                precio.isNotBlank() && (precio.toDoubleOrNull() ?: 0.0) > 0.0 && /*Que no sea puro 0 precio*/
+                cantidad.isNotBlank() && (cantidad.toIntOrNull() ?: 0) > 0 /*Que no sea puro 0 cantidad*/
     }
 
     Scaffold { padding ->
@@ -48,29 +58,19 @@ fun CompraScreen(
                     .padding(vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Agregar Compra",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
-                )
+                Text(text = "Editar Compra", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                 Spacer(modifier = Modifier.weight(1f))
                 VerticalDivider(
-                    modifier = Modifier
-                        .padding(horizontal = 18.dp)
-                        .height(28.dp),
+                    modifier = Modifier.padding(horizontal = 18.dp).height(28.dp),
                     thickness = 1.dp
                 )
-                Text(
-                    text = "Mangos USA",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
-                )
+                Text(text = "Mangos USA", fontWeight = FontWeight.Bold, fontSize = 24.sp)
             }
 
             Spacer(modifier = Modifier.weight(0.9f))
 
             Text(
-                text = "Favor de rellenar los campos necesarios para poder agregar una compra a su lista",
+                text = "Edita los datos de la compra seleccionada",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
                 modifier = Modifier.alpha(0.5f)
@@ -80,13 +80,13 @@ fun CompraScreen(
 
             Row(verticalAlignment = Alignment.CenterVertically /*CAmpo del proveedor*/) {
                 Text("Proveedor: ", fontWeight = FontWeight.SemiBold, fontSize = 18.sp, modifier = Modifier.width(110.dp))
-                Box(modifier = Modifier.fillMaxWidth()) {
+                Box(modifier = Modifier.weight(1f)) {
                     OutlinedButton(
                         onClick = { dropdownExpandido = true },
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                         shape = RoundedCornerShape(4.dp)
                     ) {
-                        Text(proveedorSeleccionado, modifier = Modifier.weight(1f).alpha(0.5f), fontSize = 16.sp) /*Que muestre el proveedor seleccionado*/
+                        Text(proveedorSeleccionado, modifier = Modifier.weight(1f).alpha(if (proveedorSeleccionado.isNotBlank()) 1f else 0.5f), fontSize = 16.sp) /*Que muestre el proveedor seleccionado*/
                         Text("+", fontSize = 16.sp)
                     }
                     DropdownMenu(
@@ -130,6 +130,7 @@ fun CompraScreen(
                     shape = RoundedCornerShape(4.dp)
                 )
             }
+
             Spacer(modifier = Modifier.weight(1f))
 
             /*Campo de la cantidad*/
@@ -142,11 +143,10 @@ fun CompraScreen(
                         if (filtro.length > 6) return@OutlinedTextField /*Maximo 10 dígitos*/
                         cantidad = filtro
                     },
-                    modifier = Modifier.width(110.dp)
-                        .height(50.dp),
+                    modifier = Modifier.width(110.dp).height(50.dp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
-                    shape = RoundedCornerShape(4.dp),
+                    shape = RoundedCornerShape(4.dp)
                 )
             }
 
@@ -177,36 +177,44 @@ fun CompraScreen(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedButton(
-                    onClick = onCancelar,
-                    shape = RoundedCornerShape(4.dp),
-                    modifier = Modifier.height(52.dp)
-                ) {
-                    Text("Cancelar", fontSize = 16.sp, color = Color.Red)
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                /*Para activar el boton de guardar cuando los campos tengan un valor valido*/
-                val botonValidoFiltro = remember(proveedorSeleccionado, precio, cantidad) {
-                    proveedorSeleccionado != "Selecciona un proveedor" &&
-                            precio.isNotBlank() && (precio.toDoubleOrNull() ?: 0.0) > 0.0 && /*Que no sea puro 0 precio*/
-                            cantidad.isNotBlank() && (cantidad.toIntOrNull() ?: 0) > 0 /*Que no sea puro 0 cantidad*/
-                }
-
                 Button(
-                    onClick = onGuardar,
+                    onClick = onEliminar,
                     shape = RoundedCornerShape(4.dp),
                     modifier = Modifier.height(52.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF368A39),
+                        containerColor = Color.Red,
                         disabledContainerColor = Color.Gray.copy(alpha = 0.4f)
-                    ),
-                    enabled = botonValidoFiltro
+                    )
                 ) {
-                    Text("Guardar", fontSize = 16.sp, color = Color.White)
+                    Text("Eliminar", fontSize = 16.sp, color = Color.White)
+                }
+
+                Row {
+                    OutlinedButton(
+                        onClick = onCancelar,
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.height(52.dp)
+                    ) {
+                        Text("Cancelar", fontSize = 16.sp, color = Color.Red)
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Button(
+                        onClick = onGuardar,
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.height(52.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF368A39),
+                            disabledContainerColor = Color.Gray.copy(alpha = 0.4f)
+                        ),
+                        enabled = botonValidoFiltro
+                    ) {
+                        Text("Guardar", fontSize = 16.sp, color = Color.White)
+                    }
                 }
             }
 

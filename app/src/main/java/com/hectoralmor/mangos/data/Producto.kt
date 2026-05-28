@@ -11,3 +11,17 @@ data class Producto(
     val precio: Double,
     val descripcion: String
 )
+
+/*Cambialo a
+* @Entity(tableName = "Compra")
+data class Compra(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val nombre: String,
+    val proveedor: String,
+    val cantidad: int //Cantidad
+    val precio: Double, //Precio
+    val fecha: String, //fecha
+    val total: Double, //total
+)
+*/
