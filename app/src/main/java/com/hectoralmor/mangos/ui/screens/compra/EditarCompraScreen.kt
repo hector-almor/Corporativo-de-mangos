@@ -1,4 +1,4 @@
-package com.hectoralmor.mangos.ui.screens
+package com.hectoralmor.mangos.ui.screens.compra
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape

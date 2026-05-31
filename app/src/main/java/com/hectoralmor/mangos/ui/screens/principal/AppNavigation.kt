@@ -1,28 +1,28 @@
-package com.hectoralmor.mangos.ui.screens
+package com.hectoralmor.mangos.ui.screens.principal
 
 import android.app.Application
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController /*Ocupe una dependencia a nivel modulo: app*/
-import com.hectoralmor.mangos.ui.viewmodel.ProductoViewModel
-import com.hectoralmor.mangos.ui.viewmodel.ProductoViewModelFactory
+import androidx.navigation.compose.rememberNavController /*Ocupé una dependencia a nivel modulo: app*/
+import com.hectoralmor.mangos.ui.screens.compra.CompraScreen
+import com.hectoralmor.mangos.ui.screens.compra.EditarCompraScreen
+import com.hectoralmor.mangos.ui.screens.proveedor.EditarProveedorScreen
+import com.hectoralmor.mangos.ui.screens.proveedor.ProveedorScreen
 
+// ESTA CLASE EN TEORÍA NO DEBE TOCAR LA BD, SI NO QUE, SOLO DELEGA A LAS SCREEN
 @Composable
 fun AppNavigation() {
     // Obtenemos el ViewModel usando nuestro Factory
-    //val viewModel:  ProductoViewModel = viewModel(factory = ProductoViewModelFactory)
+    // val viewModel:  ProductoViewModel = viewModel(factory = ProductoViewModelFactory)
     val context = LocalContext.current
     val app = context.applicationContext as Application
 
-    val productoViewModel: ProductoViewModel = viewModel(factory = ProductoViewModelFactory(app))
+    //val productoViewModel: ProductoViewModel = viewModel(factory = ProductoViewModelFactory(app))
 
     // Observamos el estado de los productos (se actualiza solo)
-    val listaProductos by productoViewModel.productos.collectAsState()
+    // val listaProductos by productoViewModel.productos.collectAsState()
 
     val navController = rememberNavController()
 
@@ -32,11 +32,16 @@ fun AppNavigation() {
     ) {
         composable(route = "principal") {
             PrincipalScreen(
-                listaProductos = listaProductos,
+                // listaProductos = listaProductos,
+                /*
                 onAgregarProductoClick = {
-                    productoViewModel.agregarProducto("Compra ${listaProductos.size + 1}", 10.5, "Cantidad: 10")
-                },
-                onLimpiarClick = { productoViewModel.limpiarProductos() },
+                    productoViewModel.agregarProducto(
+                        "Compra ${listaProductos.size + 1}",
+                        10.5,
+                        "Cantidad: 10"
+                    )
+                },*/
+                // onLimpiarClick = { productoViewModel.limpiarProductos() },
                 onAgregarProveedorScreen = { navController.navigate("proveedor") },
                 onAgregarCompraScreen = { navController.navigate("compra") },
                 onEditarProveedorScreen = { navController.navigate("editarproveedor") },

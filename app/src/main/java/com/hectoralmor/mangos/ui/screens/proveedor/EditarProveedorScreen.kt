@@ -1,4 +1,4 @@
-package com.hectoralmor.mangos.ui.screens
+package com.hectoralmor.mangos.ui.screens.proveedor
 
 import android.content.Intent
 import android.net.Uri
@@ -15,13 +15,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hectoralmor.mangos.R
 
 @Composable
 fun EditarProveedorScreen(
     onCancelar: () -> Unit,
     onGuardar: () -> Unit,
-    onEliminar: () -> Unit
+    onEliminar: () -> Unit,
+    // AL IGUAL QUE EN PRINCIPALVIEWMODEL, SE DECLARA AQUI
+    viewModel: ProveedorViewModel = viewModel(factory = ProveedorViewModel.Factory)
 ) {
     /*De prueba, agregar de la bdd*/
     val proveedores = listOf("Proveedor A", "Proveedor B", "Proveedor C")

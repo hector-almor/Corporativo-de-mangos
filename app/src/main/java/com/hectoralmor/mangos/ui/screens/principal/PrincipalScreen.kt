@@ -1,10 +1,9 @@
-package com.hectoralmor.mangos.ui.screens
+package com.hectoralmor.mangos.ui.screens.principal
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -21,8 +20,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hectoralmor.mangos.R
-import com.hectoralmor.mangos.data.Producto
+import com.hectoralmor.mangos.data.CompraConProveedor
+import androidx.compose.foundation.lazy.grid.items
 
 private val postItColores = listOf( /* La lista de los colores*/
     Color(0xFFFFF176),
@@ -35,15 +37,20 @@ private val postItColores = listOf( /* La lista de los colores*/
 
 @Composable
 fun PrincipalScreen(
-    listaProductos: List<Producto>,
-    onAgregarProductoClick: () -> Unit,
-    onLimpiarClick: () -> Unit,
+    // listaProductos: List<Producto>,
+    // onAgregarProductoClick: () -> Unit,
+    // onLimpiarClick: () -> Unit,
     onAgregarProveedorScreen: () -> Unit,
     onAgregarCompraScreen: () -> Unit,
     onEditarProveedorScreen: () -> Unit,
-    onEditarCompraScreen: () -> Unit /*Nuevo parametro para editar compra*/
+    onEditarCompraScreen: () -> Unit, /*Nuevo parametro para editar compra*/
+    viewModel: PrincipalViewModel = viewModel(factory = PrincipalViewModel.Factory)
 ) {
     var menuExpandido by remember { mutableStateOf(false) } /*Para el menuExpandido del floatingActionButton*/
+
+    // LLAMA AL VIEWMODEL PARA OBTENER LOS DATOS, CADA SCREEN TIENE SU PROPIO VIEWMODEL CON EL QUE INTERACTÚA PARA
+    // CUALQUER OPERACIÓN QUE TENGA QUE VER CON LA PERSISTENCIA DE DATOS
+    val compras by viewModel.compras.collectAsStateWithLifecycle()
 
     Scaffold { padding ->
         Box(modifier = Modifier.fillMaxSize()) {
@@ -74,9 +81,9 @@ fun PrincipalScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(listaProductos) { producto ->
+                    items(compras) { compra ->
                         PostItCard(
-                            producto = producto,
+                            compraConProv = compra,
                             onEditarClick = { onEditarCompraScreen() } /*Aqui ira la logica de editar el post it*/
                         ) /* Aqui llama mi componente de post it*/
                     }
@@ -119,7 +126,7 @@ fun PrincipalScreen(
                         FloatingActionButton(onClick = {
                             menuExpandido = false
                             onAgregarCompraScreen()
-                            onAgregarProductoClick()
+                            //onAgregarProductoClick()
                         }, modifier = Modifier.width(150.dp)) {
                             Text("Agregar Compra", modifier = Modifier.padding(horizontal = 8.dp))
                         } /*Si el menu esta expandidio se muestra el boton de agregar compra*/
@@ -141,11 +148,11 @@ fun PrincipalScreen(
 
 @Composable
         /*Componente para visualizacion de post it*/
-fun PostItCard(producto: Producto, onEditarClick: () -> Unit) {
+fun PostItCard(compraConProv: CompraConProveedor, onEditarClick: () -> Unit) {
     /* Primero convierte el nombre del producto (sera en un futuro del proveedor) en un número único que es
        fijo y calcula el residuo con floorMod, este lo usamos en lugar de usa rporcentaje  para asegurar un índice positivo
        válido entre 0 y 5 por el listof que hice arriba de colores*/
-    val colorIndex = java.lang.Math.floorMod(producto.nombre.hashCode(), postItColores.size)
+    val colorIndex = Math.floorMod(compraConProv.proveedor.nombre.hashCode(), postItColores.size)
     /*Aqui asignamos el color al producto dependiendo de su nombre*/
     val cardColor = postItColores[colorIndex]
 
@@ -160,7 +167,7 @@ fun PostItCard(producto: Producto, onEditarClick: () -> Unit) {
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = producto.nombre,
+                text = "Compra x",
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
                 maxLines = 1,
@@ -169,25 +176,29 @@ fun PostItCard(producto: Producto, onEditarClick: () -> Unit) {
             )
 
             Text(
-                text = "Proveedor A", /*Proveedor*/
-                fontSize = 11.sp,
-                maxLines = 1,
-                color = Color(0xFF424242)
-            )
-
-            Text(
-                text = producto.descripcion, /*Cantidad*/
-                fontSize = 12.sp,
-                maxLines = 1,
+                text = compraConProv.proveedor.nombre, /*Proveedor*/
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                color = Color(0xFF424242)
+                color = Color(0xFF212121)
             )
 
             Text(
-                text = "$${producto.precio}", /*Precio*/
+                text = compraConProv.compra.cantidad.toString(), /*Cantidad*/
                 fontSize = 12.sp,
-                maxLines = 1,
-                color = Color(0xFF424242)
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                color = Color(0xFF424242),
+                modifier = Modifier.weight(1f, fill = false)
+            )
+
+            Text(
+                text = "$${compraConProv.compra.precio}", /*Precio*/
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 18.sp,
+                color = Color(0xFF1A237E),
+                modifier = Modifier.align(Alignment.End)
             )
 
             Text(
@@ -199,90 +210,36 @@ fun PostItCard(producto: Producto, onEditarClick: () -> Unit) {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            /*Fila inferior con icono de editar a la izquierda y precio a la derecha*/
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically
             ) {
-                /*Icono de lapiz para editar, luego se cambia a un Icon real*/
-                TextButton(
-                    onClick = onEditarClick,
-                    contentPadding = PaddingValues(0.dp),
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .background(color = Color.Black, shape = RoundedCornerShape(1.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.editarcompra),
-                            contentDescription = "Icono de editar compra",
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-
-                Text(
-                    text = "$${producto.precio}", /*Total (O directamente lo sacas y mandas a imprimir una funcion aqui)*/
+                Text(text = "$${compraConProv.compra.fecha}", /*Fecha*/
                     fontWeight = FontWeight.ExtraBold,
-                    fontSize = 16.sp,
+                    fontSize = 18.sp,
+                    color = Color(0xFF1A237E)
+                )
+
+                Text(text = "$${compraConProv.compra.total}", /*Total (O directamente lo sacas y mandas a imprimir una funcion aqui)*/
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 18.sp,
                     color = Color(0xFF1A237E)
                 )
             }
 
+        /*Fila inferior con icono de editar a la izquierda y precio a la derecha*/
+
             /* CAMBIAR A ESTO CON LAS MODIFICACIONES DEBIDAS DE LA BASE DE DATOS
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = producto.proveedor, /*Proveedor*/
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                color = Color(0xFF212121)
-            )
-
-            Text(
-                text = producto.cantidad, /*Cantidad*/
-                fontSize = 12.sp,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                color = Color(0xFF424242),
-                modifier = Modifier.weight(1f, fill = false)
-            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = "$${producto.precio}", /*Precio*/
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 18.sp,
-                color = Color(0xFF1A237E),
-                modifier = Modifier.align(Alignment.End)
-            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "$${producto.fecha}", /*Fecha*/
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 18.sp,
-                color = Color(0xFF1A237E),
-                modifier = Modifier.align(Alignment.End))
-
-                Text(text = "$${producto.total}", /*Total (O directamente lo sacas y mandas a imprimir una funcion aqui)*/
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 18.sp,
-                color = Color(0xFF1A237E),
-                modifier = Modifier.align(Alignment.End))
-                }
              */
         }
     }

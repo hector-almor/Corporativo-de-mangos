@@ -1,4 +1,4 @@
-package com.hectoralmor.mangos.ui.screens
+package com.hectoralmor.mangos.ui.screens.proveedor
 
 import android.content.Intent
 import android.net.Uri
