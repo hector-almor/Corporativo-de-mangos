@@ -1,7 +1,6 @@
 package com.hectoralmor.mangos
 
 import android.app.Application
-import kotlin.getValue
 import androidx.room.Room
 import com.hectoralmor.mangos.data.AppDatabase
 

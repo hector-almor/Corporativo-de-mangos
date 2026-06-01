@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CompraDao {
     @Transaction
-    @Query("SELECT * FROM compras")
+    @Query("SELECT * FROM compras ORDER BY id ASC")
     fun obtenerTodas(): Flow<List<CompraConProveedor>>
 
     @Transaction

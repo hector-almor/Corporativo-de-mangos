@@ -2,36 +2,43 @@ package com.hectoralmor.mangos.ui.screens.compra
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.hectoralmor.mangos.MangosApp
-import com.hectoralmor.mangos.data.CompraConProveedor
-import com.hectoralmor.mangos.data.entity.CompraEntity
-import com.hectoralmor.mangos.data.entity.ProveedorEntity
 import com.hectoralmor.mangos.data.repository.CompraRepository
 import com.hectoralmor.mangos.data.repository.ProveedorRepository
+import com.hectoralmor.mangos.domain.model.Compra
+import com.hectoralmor.mangos.domain.model.Proveedor
+import com.hectoralmor.mangos.domain.model.repository.CompraRepository as ICompraRepository
+import com.hectoralmor.mangos.domain.model.repository.ProveedorRepository as IProveedorRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import kotlin.collections.emptyList
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
-import androidx.lifecycle.viewmodel.initializer
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlin.Double
 
 class CompraViewModel(
-    private val compraRepository: CompraRepository,
-    private val proveedorRepository: ProveedorRepository
+    private val compraRepository: ICompraRepository,
+    private val proveedorRepository: IProveedorRepository
 ) : ViewModel() {
 
+    private val _compraSeleccionada = MutableStateFlow<Compra?>(null)
+    val compraSeleccionada: StateFlow<Compra?> = _compraSeleccionada.asStateFlow()
 
-    private val _compraSeleccionada = MutableStateFlow<CompraConProveedor?>(null)
-    val proveedorSeleccionado: StateFlow<CompraConProveedor?> = _compraSeleccionada.asStateFlow()
+    val compras: StateFlow<List<Compra>> =
+        compraRepository
+            .obtenerTodas()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
 
-    val comprasDeHoy: StateFlow<List<CompraConProveedor>> =
+    val comprasDeHoy: StateFlow<List<Compra>> =
         compraRepository
             .obtenerPorFecha(LocalDate.now().toString())
             .stateIn(
@@ -40,9 +47,9 @@ class CompraViewModel(
                 initialValue = emptyList()
             )
 
-    val compras: StateFlow<List<CompraConProveedor>> =
-        compraRepository
-            .obtenerTodas()
+    val proveedores: StateFlow<List<Proveedor>> =
+        proveedorRepository
+            .obtenerTodos()
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
@@ -54,44 +61,28 @@ class CompraViewModel(
             _compraSeleccionada.value = compraRepository.obtenerCompraId(id)
         }
     }
-    val proveedores: StateFlow<List<ProveedorEntity>> =
-        proveedorRepository
-            .obtenerTodos()
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = emptyList()
-            )
 
-    fun guardarCompra(proveedorId: Int, cantidad: Double, precio: Double) {
+    fun guardarCompra(proveedorId: Int, nombreProveedor: String, cantidad: Double, precio: Double) {
         viewModelScope.launch {
             compraRepository.guardar(
-                CompraEntity(
+                Compra(
                     proveedorId = proveedorId,
+                    nombre = nombreProveedor,
                     cantidad = cantidad,
                     precio = precio,
-                    fecha = LocalDate.now().toString(),
-                    total = cantidad * precio
+                    fecha = LocalDate.now().toString()
                 )
             )
         }
     }
 
-    fun eliminarCompra(compra: CompraEntity) {
+    fun eliminarCompra(compra: Compra) {
         viewModelScope.launch { compraRepository.eliminar(compra) }
     }
 
-    fun editarCompra(compra: CompraEntity){
+    fun editarCompra(compra: Compra) {
         viewModelScope.launch {
-            compraRepository.actualizar(
-                CompraEntity(
-                    proveedorId = compra.proveedorId,
-                    cantidad = compra.cantidad,
-                    precio = compra.precio,
-                    fecha = compra.fecha,
-                    total = compra.cantidad * compra.precio
-                )
-            )
+            compraRepository.actualizar(compra.copy(total = compra.cantidad * compra.precio))
         }
     }
 

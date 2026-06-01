@@ -1,78 +1,77 @@
 package com.hectoralmor.mangos.ui.screens.principal
 
-import android.app.Application
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController /*Ocupé una dependencia a nivel modulo: app*/
+import androidx.navigation.navArgument
 import com.hectoralmor.mangos.ui.screens.compra.CompraScreen
 import com.hectoralmor.mangos.ui.screens.compra.EditarCompraScreen
 import com.hectoralmor.mangos.ui.screens.proveedor.EditarProveedorScreen
 import com.hectoralmor.mangos.ui.screens.proveedor.ProveedorScreen
+import com.hectoralmor.mangos.ui.theme.MangoColores
 
-// ESTA CLASE EN TEORÍA NO DEBE TOCAR LA BD, SI NO QUE, SOLO DELEGA A LAS SCREEN
+
+/*Esta clase no toca la bdd, solo la navegacion de las pantallas*/
 @Composable
 fun AppNavigation() {
-    // Obtenemos el ViewModel usando nuestro Factory
-    // val viewModel:  ProductoViewModel = viewModel(factory = ProductoViewModelFactory)
-    val context = LocalContext.current
-    val app = context.applicationContext as Application
-
-    //val productoViewModel: ProductoViewModel = viewModel(factory = ProductoViewModelFactory(app))
-
-    // Observamos el estado de los productos (se actualiza solo)
-    // val listaProductos by productoViewModel.productos.collectAsState()
-
     val navController = rememberNavController()
 
-    NavHost(
-        navController = navController,
-        startDestination = "principal" /*Empieza en el principal, que seria la principalscreen*/
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MangoColores.Fondo)
     ) {
-        composable(route = "principal") {
-            PrincipalScreen(
-                // listaProductos = listaProductos,
-                /*
-                onAgregarProductoClick = {
-                    productoViewModel.agregarProducto(
-                        "Compra ${listaProductos.size + 1}",
-                        10.5,
-                        "Cantidad: 10"
-                    )
-                },*/
-                // onLimpiarClick = { productoViewModel.limpiarProductos() },
-                onAgregarProveedorScreen = { navController.navigate("proveedor") },
-                onAgregarCompraScreen = { navController.navigate("compra") },
-                onEditarProveedorScreen = { navController.navigate("editarproveedor") },
-                onEditarCompraScreen = { navController.navigate("editarcompra") } /*Navega a editar compra*/
-            )
-        }
-        composable(route = "compra") {
-            CompraScreen(
-                onCancelar = { navController.popBackStack() },
-                onGuardar = { navController.popBackStack() } // aquí después agregas la lógica de guardar
-            )
-        }
-        composable(route = "proveedor") {
-            ProveedorScreen(
-                onCancelar = { navController.popBackStack() },
-                onGuardar = { navController.popBackStack() } /*Aqui despues agregas la logica de guardar*/
-            )
-        }
-        composable(route = "editarproveedor") {
-            EditarProveedorScreen(
-                onCancelar = { navController.popBackStack() },
-                onGuardar = { navController.popBackStack() }, /*Aqui despues agregas la logica de guardar*/
-                onEliminar = { navController.popBackStack() } /*Aqui despues agregas la logica de eliminar*/
-            )
-        }
-        composable(route = "editarcompra") {
-            EditarCompraScreen(
-                onCancelar = { navController.popBackStack() },
-                onGuardar = { navController.popBackStack() }, /*Aqui despues agregas la logica de guardar*/
-                onEliminar = { navController.popBackStack() } /*Aqui despues agregas la logica de eliminar*/
-            )
+        NavHost(
+            navController = navController,
+            startDestination = "principal"
+        ) {
+            composable(route = "principal") {
+                PrincipalScreen(
+                    onAgregarProveedorScreen = { navController.navigate("proveedor") },
+                    onAgregarCompraScreen = { navController.navigate("compra") },
+                    onEditarProveedorScreen = { navController.navigate("editarproveedor") },
+                    onEditarCompraScreen = { compraId -> navController.navigate("editarcompra/$compraId") }
+                )
+            }
+            composable(route = "compra") {
+                CompraScreen(
+                    onCancelar = { navController.popBackStack() },
+                    onGuardar = { navController.popBackStack() }
+                )
+            }
+            composable(route = "proveedor") {
+                ProveedorScreen(
+                    onCancelar = { navController.popBackStack() },
+                    onGuardar = { navController.popBackStack() }
+                )
+            }
+            composable(route = "editarproveedor") {
+                EditarProveedorScreen(
+                    onCancelar = { navController.popBackStack() },
+                    onGuardar = { navController.popBackStack() },
+                    onEliminar = { navController.popBackStack() }
+                )
+            }
+            composable(
+                route = "editarcompra/{compraId}",
+                arguments = listOf(navArgument("compraId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val compraId = backStackEntry.arguments?.getLong("compraId") ?: return@composable
+                EditarCompraScreen(
+                    compraId = compraId,
+                    onCancelar = { navController.popBackStack() },
+                    onGuardar = { navController.popBackStack() },
+                    onEliminar = { navController.popBackStack() }
+                )
+            }
         }
     }
 }

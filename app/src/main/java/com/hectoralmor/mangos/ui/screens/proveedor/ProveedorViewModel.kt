@@ -7,26 +7,24 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.hectoralmor.mangos.MangosApp
-import com.hectoralmor.mangos.data.entity.CompraEntity
-import com.hectoralmor.mangos.data.entity.ProveedorEntity
 import com.hectoralmor.mangos.data.repository.ProveedorRepository
+import com.hectoralmor.mangos.domain.model.Proveedor
+import com.hectoralmor.mangos.domain.model.repository.ProveedorRepository as IProveedorRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 class ProveedorViewModel(
-    private val proveedorRepository: ProveedorRepository
-): ViewModel() {
-    private val _proveedorSeleccionado = MutableStateFlow<ProveedorEntity?>(null)
-    val proveedorSeleccionado: StateFlow<ProveedorEntity?> = _proveedorSeleccionado.asStateFlow()
+    private val proveedorRepository: IProveedorRepository
+) : ViewModel() {
 
+    private val _proveedorSeleccionado = MutableStateFlow<Proveedor?>(null)
+    val proveedorSeleccionado: StateFlow<Proveedor?> = _proveedorSeleccionado.asStateFlow()
 
-    val proveedores: StateFlow<List<ProveedorEntity>> =
+    val proveedores: StateFlow<List<Proveedor>> =
         proveedorRepository.obtenerTodos()
             .stateIn(
                 scope = viewModelScope,
@@ -34,36 +32,31 @@ class ProveedorViewModel(
                 initialValue = emptyList()
             )
 
-
     fun obtenerProveedor(id: Int) {
         viewModelScope.launch {
             _proveedorSeleccionado.value = proveedorRepository.obtenerProveedorId(id)
         }
     }
 
-    fun guardarProveedor(proveedor: ProveedorEntity){
+    fun seleccionarProveedor(proveedor: Proveedor) {
+        _proveedorSeleccionado.value = proveedor
+    }
+
+    fun limpiarSeleccion() {
+        _proveedorSeleccionado.value = null
+    }
+
+    fun guardarProveedor(nombre: String, direccion: String) {
         viewModelScope.launch {
-            proveedorRepository.guardar(
-                ProveedorEntity(
-                    nombre = proveedor.nombre,
-                    direccion = proveedor.direccion
-                )
-            )
+            proveedorRepository.guardar(Proveedor(nombre = nombre, direccion = direccion))
         }
     }
 
-    fun actualizarProveedor(proveedor: ProveedorEntity){
-        viewModelScope.launch {
-            proveedorRepository.actualizar(
-                ProveedorEntity(
-                    nombre = proveedor.nombre,
-                    direccion = proveedor.direccion
-                )
-            )
-        }
+    fun actualizarProveedor(proveedor: Proveedor) {
+        viewModelScope.launch { proveedorRepository.actualizar(proveedor) }
     }
 
-    fun eliminarProveedor(proveedor: ProveedorEntity){
+    fun eliminarProveedor(proveedor: Proveedor) {
         viewModelScope.launch { proveedorRepository.eliminar(proveedor) }
     }
 
