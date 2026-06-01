@@ -218,7 +218,7 @@ fun CompraScreen(
                         singleLine = true,
                         shape = RoundedCornerShape(4.dp)
                     )
-                    Text("  Kg", fontSize = 16.sp, color = MangoColores.TextoPrincipal)
+                    Text("  Ton", fontSize = 16.sp, color = MangoColores.TextoPrincipal)
                 }
 
                 Spacer(modifier = Modifier.weight(3f))
